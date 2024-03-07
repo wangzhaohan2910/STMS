@@ -22,8 +22,6 @@ def dumper(filename, data):
 
 
 if __name__ == "__main__":
-    from pprint import pprint
-
     data = {
         "teacher": {
             "tea1": {"pup1", "pup2", "pup3"},
@@ -40,11 +38,8 @@ if __name__ == "__main__":
             "pup5": {"tea3", "tea4"},
         },
     }
-    dumper("data.json", data)
+    data2 = deepcopy(data)
+    dumper("data.json", data2)
+    print("data==data2 after dump?", data == data2)
     data2 = loader("data.json")
-    print("\n\nData before changes:\n")
-    pprint(data)
-    print("\n\nData after loading and printing:\n")
-    pprint(data2)
-    print("\n\nData uncorrupted:\n")
-    print(data == data2)
+    print("data==data2 after load?", data == data2)

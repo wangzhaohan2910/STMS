@@ -48,7 +48,7 @@ def dumper(filename, data):
 
 
 if __name__ == "__main__":
-    from pprint import pprint
+    from copy import deepcopy
 
     data = {
         "teacher": {
@@ -66,11 +66,8 @@ if __name__ == "__main__":
             "pup5": {"tea3", "tea4"},
         },
     }
-    dumper("data.xml", data)
+    data2 = deepcopy(data)
+    dumper("data.xml", data2)
+    print("data==data2 after dump?", data == data2)
     data2 = loader("data.xml")
-    print("\n\nData before changes:\n")
-    pprint(data)
-    print("\n\nData after loading and printing:\n")
-    pprint(data2)
-    print("\n\nData uncorrupted:\n")
-    print(data == data2)
+    print("data==data2 after load?", data == data2)
