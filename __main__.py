@@ -8,7 +8,7 @@ def SayHello():
     print("In the next part of this program,")
     print("you need to type some commands.")
     print("If you don't know the function of each command,")
-    print('then type "help".')
+    print('then you can type "help".')
 
 
 if __name__ == "__main__":
