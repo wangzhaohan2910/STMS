@@ -1,15 +1,13 @@
-def SayHello():
-    print("Welcome to STMS.")
-    print("This project uses MIT License.")
-    print("If you think this project is useful,")
-    print("and want to use it in your project,")
-    print("please obey the MIT License.")
-    print("(But, I don't think it will be useful.)")
-    print("In the next part of this program,")
-    print("you need to type some commands.")
-    print("If you don't know the function of each command,")
-    print('then you can type "help".')
+from cmd import Cmd
+from argparse import ArgumentParser
+
+
+class cApp(Cmd):
+    prompt = "Command>"
 
 
 if __name__ == "__main__":
-    SayHello()
+    hParser = ArgumentParser(description="The STMS.")
+    hParser.add_argument("file")
+    hParser.add_argument("-s", "--script", type=open)
+    print(hParser.parse_args())
