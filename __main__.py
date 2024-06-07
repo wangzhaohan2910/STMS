@@ -12,7 +12,6 @@ class cApp(Cmd):
 
 if __name__ == "__main__":
     hParser = ArgumentParser(description="The STMS.")
-    hParser.add_argument("file")
-    hParser.add_argument("-s", "--script", type=open)
+    hParser.add_argument("file", type=open)
     print("Welcome to the STMS.")
     cApp().cmdloop()
