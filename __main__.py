@@ -1,29 +1,19 @@
 from cmd import Cmd
-from argparse import ArgumentParser
-
-gData = {}
 
 
-class cApp(Cmd):
-    prompt = "Command>"
+class Student:
+    __Name = ""
 
-    def do_EOF(self, line):
-        """Exit the program."""
-        return True
+    def GetName(self):
+        return self.__Name
+
+    def SetName(self, Name):
+        self.__Name = Name
 
 
-if __name__ == "__main__":
-    hParser = ArgumentParser(description="The STMS.")
-    hParser.add_argument("file", type=open)
-    for lPair in map(
-        lambda sLine: sLine.split(" "), hParser.parse_args().file.read().split("\n")
-    ):
-        if len(lPair) > 1:
-            sTeacherName = lPair[0]
-            sStudentName = lPair[1]
-            try:
-                gData[sTeacherName].add(sStudentName)
-            except:
-                gData[sTeacherName] = {sStudentName}
-    print("Welcome to the STMS.")
-    cApp().cmdloop()
+class Teacher(Student):
+    __Students = {}
+
+    def AddStudents(self, *Students):
+        for EachStudent in Students:
+            self.__Students.add(EachStudent)
