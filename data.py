@@ -189,5 +189,5 @@ class Database:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        log("Exit")
+        log("Exit exc_type: " + str(exc_type) + " exc_value: " + str(exc_value))
         return self.write()

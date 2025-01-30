@@ -2,6 +2,7 @@ import unittest
 from io import StringIO
 from data import Database, Teacher
 
+
 class TestDatabase(unittest.TestCase):
 
     def setUp(self):
@@ -180,5 +181,16 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(len(teachers), 2)
         self.assertEqual(teachers[1].sName, "教师1")
         self.assertEqual(teachers[1].setStudent, {0})
+
+    def test_with(self):
+        # 测试使用 with 语句打开数据库
+        with Database("test.db") as db:
+            raise Exception("Hello, world!")
+        with Database("test.db") as db:
+            self.assertEqual(db.sFileName, "test.db")
+            self.assertEqual(db.STU, [""])
+            self.assertEqual(len(db.TCH), 1)
+
+
 if __name__ == "__main__":
     unittest.main()
