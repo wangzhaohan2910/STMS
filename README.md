@@ -1,2 +1,3 @@
 # This is the simple Student-Teacher-Management-System.
-~~It is just a dict that contains set!~~
+
+I use `pickle` to store data. And its APIs are RESTful.
