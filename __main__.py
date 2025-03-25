@@ -1,4 +1,6 @@
 from pickle import dump, load
+from operator import and_, or_, xor
+from functools import reduce
 
 
 class Teacher:
@@ -16,11 +18,15 @@ class Database:
     STU = [""]
     TCH = [Teacher()]
 
-    def postStudent(self, sName, *lTeacher):
-        self.STU.append(sName)
-        for i in lTeacher:
-            self.TCH[i].setStudent.add(len(self.STU) - 1)
-        return len(self.STU) - 1
+    def getStudentName(self, *lId):
+        return (self.STU[i] for i in lId)
+
+    def putStudentName(self, iId, sName):
+        self.STU[iId] = sName
+        return True
+
+    def getStudentTeacher(self, *lId):
+        return ({i.iId for i in self.TCH if iId in i.setStudent} for iId in lId)
 
     def putStudentTeacher(self, iId, *lTeacher):
         for i in self.TCH:
@@ -30,19 +36,24 @@ class Database:
                 i.setStudent.add(iId)
         return True
 
-    def putStudentName(self, iId, sName):
-        self.STU[iId] = sName
-        return True
+    def getStudentCount(self):
+        return len(self.STU) - 1
 
     def putStudent(self, iId, sName, *lTeacher):
         return self.putStudentName(iId, sName) and self.putStudentTeacher(
             iId, *lTeacher
         )
 
-    def deleteStudent(self, iId):
-        self.STU[iId] = ""
-        for i in self.TCH:
-            i.setStudent.discard(iId)
+    def postStudent(self, sName, *lTeacher):
+        self.STU.append("")
+        self.putStudent(self.getStudentCount(), sName, *lTeacher)
+        return self.getStudentCount()
+
+    def deleteStudent(self, *lId):
+        for i in lId:
+            self.STU[i] = ""
+            for j in self.TCH:
+                j.setStudent.discard(i)
         while self.STU[-1] == "" and len(self.STU) > 1:
             self.STU.pop()
         return True
@@ -53,86 +64,101 @@ class Database:
         self.STU = [""]
         return True
 
-    def getStudentCount(self):
-        return len(self.STU) - 1
+    def getStudentInTeachers(self, iId, *lTeacher):
+        return (iId in self.TCH[i].setStudent for i in lTeacher)
 
-    def getStudentName(self, iId):
-        return self.STU[iId]
-
-    def getStudentTeacher(self, iId):
-        return {i.iId for i in self.TCH if iId in i.setStudent}
-
-    def getStudentTeachers(self, iId, *lTeacher):
-        return [iId in self.TCH[i].setStudent for i in lTeacher]
+    def getStudentTeacherCount(self, *lId):
+        return (len(next(self.getStudentTeacher(i))) for i in lId)
 
     def getStudentAnd(self, *lId):
         return {i.iId for i in self.TCH if all(j in i.setStudent for j in lId)}
 
+    def putStudentAnd(self, iId, *lId):
+        return self.putStudentTeacher(iId, *self.getStudentAnd(iId, *lId))
+
+    def putStudentAndName(self, iId, sName, *lId):
+        return self.putStudent(iId, sName, *self.getStudentAnd(iId, *lId))
+
+    def postStudentAnd(self, sName, *lId):
+        return self.postStudent(sName, *self.getStudentAnd(*lId))
+
     def getStudentOr(self, *lId):
         return {i.iId for i in self.TCH if any(j in i.setStudent for j in lId)}
+
+    def putStudentOr(self, iId, *lId):
+        return self.putStudentTeacher(iId, *self.getStudentOr(iId, *lId))
+
+    def putStudentOrName(self, iId, sName, *lId):
+        return self.putStudent(iId, sName, *self.getStudentOr(iId, *lId))
+
+    def postStudentOr(self, sName, *lId):
+        return self.postStudent(sName, *self.getStudentOr(*lId))
 
     def getStudentXor(self, *lId):
         return {i.iId for i in self.TCH if sum(j in i.setStudent for j in lId) % 2 != 0}
 
-    def getStudentNot(self, iId):
-        return {i.iId for i in self.TCH if iId not in i.setStudent}
+    def putStudentXor(self, iId, *lId):
+        return self.putStudentTeacher(iId, *self.getStudentXor(iId, *lId))
 
-    def setStudentNot(self, iId):
-        for i in self.TCH:
-            if iId in i.setStudent:
-                i.setStudent.discard(iId)
-            else:
-                i.setStudent.add(iId)
+    def putStudentXorName(self, iId, sName, *lId):
+        return self.putStudent(iId, sName, *self.getStudentXor(iId, *lId))
 
-    def getStudentAndTeacher(self, iId, *lTeacher):
-        return {
-            t.iId
-            for t in self.TCH
-            if (iId in t.setStudent) and all(stu in t.setStudent for stu in lTeacher)
-        }
+    def postStudentXor(self, sName, *lId):
+        return self.postStudent(sName, *self.getStudentXor(*lId))
 
-    def getStudentOrTeacher(self, iId, *lTeacher):
-        return {
-            t.iId
-            for t in self.TCH
-            if (iId in t.setStudent) or any(stu in t.setStudent for stu in lTeacher)
-        }
+    def getStudentAndTeacher(self, iId, *lId):
+        return next(self.getStudentTeacher(iId)) & set(lId)
 
-    def getStudentXorTeacher(self, iId, *lTeacher):
-        return {
-            t.iId
-            for t in self.TCH
-            if (iId in t.setStudent)
-            ^ (sum(stu in t.setStudent for stu in lTeacher) % 2 != 0)
-        }
+    def putStudentAndTeacher(self, iIdAno, iId, *lId):
+        return self.putStudentTeacher(iIdAno, *self.getStudentAndTeacher(iId, *lId))
 
-    def setStudentAndTeacher(self, iId, *lTeacher):
-        for i in self.TCH:
-            if i.iId in lTeacher:
-                i.setStudent.add(iId)
-            else:
-                i.setStudent.discard(iId)
+    def putSameStudentAndTeacher(self, iId, *lId):
+        return self.putStudentAndTeacher(iId, iId, *lId)
 
-    def getStudentOrTeacher(self, iId, *lTeacher):
-        return {i.iId for i in self.TCH if any(j in i.setStudent for j in lTeacher)}
+    def putStudentAndTeacherName(self, iIdAno, iId, sName, *lId):
+        return self.putStudent(iIdAno, sName, *self.getStudentAndTeacher(iId, *lId))
 
-    def setStudentOrTeacher(self, iId, *lTeacher):
-        for i in self.TCH:
-            if i.iId in lTeacher:
-                i.setStudent.add(iId)
+    def putSameStudentAndTeacherName(self, iId, sName, *lId):
+        return self.putStudentAndTeacherName(iId, iId, sName, *lId)
+
+    def postStudentAndTeacher(self, sName, iId, *lId):
+        return self.postStudent(sName, *self.getStudentAndTeacher(iId, *lId))
+
+    def getStudentOrTeacher(self, iId, *lId):
+        return next(self.getStudentTeacher(iId)) | set(lId)
+
+    def putStudentOrTeacher(self, iIdAno, iId, *lId):
+        return self.putStudentTeacher(iIdAno, *self.getStudentOrTeacher(iId, *lId))
+
+    def putSameStudentOrTeacher(self, iId, *lId):
+        return self.putStudentOrTeacher(iId, iId, *lId)
+
+    def putStudentOrTeacherName(self, iIdAno, iId, sName, *lId):
+        return self.putStudent(iIdAno, sName, *self.getStudentOrTeacher(iId, *lId))
+
+    def putSameStudentOrTeacherName(self, iId, sName, *lId):
+        return self.putStudentOrTeacherName(iId, iId, sName, *lId)
+
+    def postStudentOrTeacher(self, sName, iId, *lId):
+        return self.postStudent(sName, *self.getStudentOrTeacher(iId, *lId))
 
     def getStudentXorTeacher(self, iId, *lTeacher):
-        return {
-            i.iId for i in self.TCH if sum(j in i.setStudent for j in lTeacher) % 2 != 0
-        }
+        return next(self.getStudentTeacher(iId)) ^ set(lTeacher)
 
-    def setStudentXorTeacher(self, iId, *lTeacher):
-        for i in self.TCH:
-            if i.iId in lTeacher:
-                if iId in i.setStudent:
-                    i.setStudent.discard(iId)
-                else:
-                    i.setStudent.add(iId)
+    def putStudentXorTeacher(self, iIdAno, iId, *lId):
+        return self.putStudentTeacher(iIdAno, *self.getStudentXorTeacher(iId, *lId))
+
+    def putSameStudentXorTeacher(self, iId, *lId):
+        return self.putStudentXorTeacher(iId, iId, *lId)
+
+    def putStudentXorTeacherName(self, iIdAno, iId, sName, *lId):
+        return self.putStudent(iIdAno, sName, *self.getStudentXorTeacher(iId, *lId))
+
+    def putSameStudentXorTeacherName(self, iId, sName, *lId):
+        return self.putStudentXorTeacherName(iId, iId, sName, *lId)
+
+    def postStudentXorTeacher(self, sName, iId, *lId):
+        return self.postStudent(sName, *self.getStudentXorTeacher(iId, *lId))
 
     def getAllStudentName(self):
         return {i for i in self.STU if i}
@@ -147,29 +173,36 @@ class Database:
                     dResult[j].add(i.iId)
         return dResult
 
-    def postTeacher(self, sName, *lStudent):
-        self.TCH.append(Teacher())
-        self.TCH[-1].iId = len(self.TCH) - 1
-        self.TCH[-1].sName = sName
-        self.TCH[-1].setStudent = set(lStudent)
-        return len(self.TCH) - 1
+    def getTeacherName(self, *lId):
+        return (self.TCH[i].sName for i in lId)
 
     def putTeacherName(self, iId, sName):
         self.TCH[iId].sName = sName
         return True
 
-    def putTeacherStudent(self, iId, *lStudent):
-        self.TCH[iId].setStudent = set(lStudent)
+    def getTeacherStudent(self, *lId):
+        return (self.TCH[i].setStudent for i in lId)
+
+    def putTeacherStudent(self, iId, *lId):
+        self.TCH[iId].setStudent = set(lId)
         return True
 
-    def putTeacher(self, iId, sName, *lStudent):
-        return self.putTeacherName(iId, sName) and self.putTeacherStudent(
-            iId, *lStudent
-        )
+    def getTeacherCount(self):
+        return len(self.TCH) - 1
 
-    def deleteTeacher(self, iId):
-        self.TCH[iId].sName = ""
-        self.TCH[iId].setStudent.clear()
+    def putTeacher(self, iId, sName, *lId):
+        return self.putTeacherName(iId, sName) and self.putTeacherStudent(iId, *lId)
+
+    def postTeacher(self, sName, *lId):
+        self.TCH.append(Teacher())
+        self.TCH[-1].iId = len(self.TCH) - 1
+        self.putTeacher(self.getTeacherCount(), sName, *lId)
+        return len(self.TCH) - 1
+
+    def deleteTeacher(self, *lId):
+        for i in lId:
+            self.TCH[i].sName = ""
+            self.TCH[i].setStudent.clear()
         while self.TCH[-1].sName == "" and len(self.TCH) > 1:
             self.TCH.pop()
         return True
@@ -178,99 +211,47 @@ class Database:
         self.TCH = [Teacher()]
         return True
 
-    def getTeacherCount(self):
-        return len(self.TCH) - 1
+    def getTeacherInStudents(self, iId, *lId):
+        return (i in self.TCH[iId].setStudent for i in lId)
 
-    def getTeacherName(self, iId):
-        return self.TCH[iId].sName
-
-    def getTeacherStudent(self, iId):
-        return self.TCH[iId].setStudent
-
-    def getTeacherStudents(self, iId, *lStudent):
-        return [iId in self.getStudentTeacher(j) for j in lStudent]
+    def getTeacherStudentCount(self, *lId):
+        return (len(self.TCH[i].setStudent) for i in lId)
 
     def getTeacherAnd(self, *lId):
-        setResult = set()
-        for j in range(1, len(self.STU)):
-            if all(i in self.getStudentTeacher(j) for i in lId):
-                setResult.add(j)
-        return setResult
+        return reduce(and_, (self.TCH[i].setStudent for i in lId))
+
+    def putTeacherAnd(self, iId, *lId):
+        return self.putTeacherStudent(iId, *self.getTeacherAnd(*lId))
+
+    def putTeacherAndName(self, iId, sName, *lId):
+        return self.putTeacher(iId, sName, *self.getTeacherAnd(*lId))
+
+    def postTeacherAnd(self, sName, *lId):
+        return self.postTeacher(sName, *self.getTeacherAnd(*lId))
 
     def getTeacherOr(self, *lId):
-        setResult = set()
-        for j in range(1, len(self.STU)):
-            if any(i in self.getStudentTeacher(j) for i in lId):
-                setResult.add(j)
-        return setResult
+        return reduce(or_, (self.TCH[i].setStudent for i in lId))
+
+    def putTeacherOr(self, iId, *lId):
+        return self.putTeacherStudent(iId, *self.getTeacherOr(*lId))
+
+    def putTeacherOrName(self, iId, sName, *lId):
+        return self.putTeacher(iId, sName, *self.getTeacherOr(*lId))
+
+    def postTeacherOr(self, sName, *lId):
+        return self.postTeacher(sName, *self.getTeacherOr(*lId))
 
     def getTeacherXor(self, *lId):
-        setResult = set()
-        for j in range(1, len(self.STU)):
-            count = sum(1 for i in lId if i in self.getStudentTeacher(j))
-            if count % 2 != 0:
-                setResult.add(j)
-        return setResult
+        return reduce(xor, (self.TCH[i].setStudent for i in lId))
 
-    def getTeacherNot(self, iId):
-        return {
-            j for j in range(1, len(self.STU)) if iId not in self.getStudentTeacher(j)
-        }
+    def putTeacherXor(self, iId, *lId):
+        return self.putTeacherStudent(iId, *self.getTeacherXor(*lId))
 
-    def setTeacherNot(self, iId):
-        for j in range(1, len(self.STU)):
-            if j in self.TCH[iId].setStudent:
-                self.TCH[iId].setStudent.discard(j)
-            else:
-                self.TCH[iId].setStudent.add(j)
+    def putTeacherXorName(self, iId, sName, *lId):
+        return self.putTeacher(iId, sName, *self.getTeacherXor(*lId))
 
-    def getTeacherAndStudent(self, iId, *lStudent):
-        return {
-            j
-            for j in range(1, len(self.STU))
-            if (iId in self.getStudentTeacher(j))
-            and all(stu in self.getStudentTeacher(j) for stu in lStudent)
-        }
-
-    def getTeacherOrStudent(self, iId, *lStudent):
-        return {
-            j
-            for j in range(1, len(self.STU))
-            if (iId in self.getStudentTeacher(j))
-            or any(stu in self.getStudentTeacher(j) for stu in lStudent)
-        }
-
-    def getTeacherXorStudent(self, iId, *lStudent):
-        return {
-            j
-            for j in range(1, len(self.STU))
-            if (iId in self.getStudentTeacher(j))
-            ^ (sum(stu in self.getStudentTeacher(j) for stu in lStudent) % 2 != 0)
-        }
-
-    def setTeacherAndStudent(self, iId, *lStudent):
-        for j in range(1, len(self.STU)):
-            if j in lStudent:
-                self.TCH[iId].setStudent.add(j)
-            else:
-                self.TCH[iId].setStudent.discard(j)
-
-    def setTeacherOrStudent(self, iId, *lStudent):
-        for j in lStudent:
-            self.TCH[iId].setStudent.add(j)
-
-    def setTeacherXorStudent(self, iId, *lStudent):
-        for j in lStudent:
-            if j in self.TCH[iId].setStudent:
-                self.TCH[iId].setStudent.discard(j)
-            else:
-                self.TCH[iId].setStudent.add(j)
-
-    def getAllTeacherName(self):
-        return {i.sName for i in self.TCH if i.sName}
-
-    def getAllTeacherStudent(self):
-        return {i.iId: i.setStudent for i in self.TCH}
+    def postTeacherXor(self, sName, *lId):
+        return self.postTeacher(sName, *self.getTeacherXor(*lId))
 
     def put(self, STU, TCH):
         self.STU = STU
