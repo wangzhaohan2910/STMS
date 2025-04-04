@@ -4,10 +4,10 @@ from functools import reduce
 from collections import defaultdict, abc
 
 
-class Database:
+class TeacherDB:
     sFileName = ""
-    STU = [""]
     TCH = [[0, "", set()]]
+    STU = [""]
 
     def getStudentName(self, *lId):
         return (self.STU[i] for i in lId)
@@ -330,16 +330,16 @@ class Database:
     def getAllTeacherStudent(self):
         return {i[0]: i[2] for i in self.TCH if i[1]}
 
-    def put(self, STU, TCH):
-        self.STU = STU
+    def put(self, TCH, STU):
         self.TCH = TCH
+        self.STU = STU
         return True
 
     def delete(self):
-        return self.deleteAllStudent() and self.deleteAllTeacher()
+        return self.deleteAllTeacher() and self.deleteAllStudent()
 
     def get(self):
-        return [self.STU, self.TCH]
+        return (self.TCH, self.STU)
 
     def write(self):
         dump(self.get(), open(self.sFileName, "wb"))
